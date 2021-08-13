@@ -1,6 +1,7 @@
 package repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,6 +73,70 @@ public class TodolistRespositoryImplTest {
         Todolist todoNull = new Todolist(null);
         Exception exceptionNull = assertThrows(RuntimeException.class, () -> todolistRepository.add(todoNull));
         assertTrue(exceptionNull.getMessage().contains("cannot be null"));
+    }
+
+    @Test
+    void testRemoveSuccess() {
+        String sql = "INSERT INTO todolist(todo) values ('RIAN')";
+
+        try(Connection conn = dataSource.getConnection();
+        Statement statement = conn.createStatement()
+        ) {
+            statement.execute(sql);
+
+            String sql2 = "select count(id) total from todolist where todo ='RIAN'";
+            ResultSet result = statement.executeQuery(sql2);
+
+            Integer total = 0;
+            while(result.next()) {
+                total = result.getInt("total");
+            }
+
+            assertEquals(1, total);
+
+            assertTrue(todolistRepository.remove(1));
+
+            sql2 = "select count(id) total from todolist where todo ='RIAN'";
+            result = statement.executeQuery(sql2);
+
+            total = 0;
+            while(result.next()) {
+                total = result.getInt("total");
+            }
+
+            assertEquals(0, total);
+
+        } catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
+        
+    }
+
+    @Test
+    void testRemoveFailed() {
+        String sql = "INSERT INTO todolist(todo) values ('RIAN')";
+
+        try(Connection conn = dataSource.getConnection();
+        Statement statement = conn.createStatement()
+        ) {
+            statement.execute(sql);
+
+            String sql2 = "select count(id) total from todolist where todo ='RIAN'";
+            ResultSet result = statement.executeQuery(sql2);
+
+            Integer total = 0;
+            while(result.next()) {
+                total = result.getInt("total");
+            }
+
+            assertEquals(1, total);
+
+            assertFalse(todolistRepository.remove(2));
+
+            assertTrue(todolistRepository.remove(1));
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     @BeforeEach

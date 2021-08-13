@@ -2,7 +2,9 @@ package repositories;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.sql.DataSource;
 
@@ -42,37 +44,40 @@ public class TodolistRepositoryImpl implements TodolistRepository{
 
     @Override
     public boolean remove(Integer index) {
-        if ((index - 1) >= data.length) {
+        if(!ifExist(index)) {
             return false;
-        } else if (data[index - 1] == null) {
-            return false;
-        } else {
-            for (int i = (index - 1); i < data.length; i++) {
-                if (i == (data.length - 1)) {
-                    data[i] = null;
-                } else {
-                    data[i] = data[i + 1];
-                }
-            }
-            return true;
-        }   
+        }
+
+        String sql = "DELETE FROM todolist WHERE id = ?";
+
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ){ 
+            statement.setInt(1, index);
+            int delete = statement.executeUpdate();
+            System.out.println(delete);
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return true;
      }
 
-    private boolean isFull(){
-        if(data[data.length-1] != null) {
-            return true;
-        }
-        return false;
-    }
+     private boolean ifExist(Integer index) {
+         String sql = "select id from todolist limit 1";
 
-    private void resizeIfFull() {
-        if(isFull()) {
-            var temp = data;
-            data = new Todolist[data.length*2];
+         try(Connection conn = dataSource.getConnection();
+         Statement statement = conn.createStatement();
+         ResultSet result = statement.executeQuery(sql)) {
+             while(result.next()) {
+                 if(result.getInt("id") == index) {
+                     return true;
+                 }
+             }
+         } catch (Exception e) {
+             throw new RuntimeException(e);
+         }
 
-            for(int i = 0; i < temp.length; i++){
-                data[i] = temp[i];
-            }
-        }
-    }
+         return false;
+     }
 }
