@@ -7,8 +7,6 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import org.junit.jupiter.api.Test;
 
-import utils.DatabaseUtil;
-
 public class DatabaseUtilTest {
 
     @Test

@@ -1,6 +1,7 @@
 package repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,18 +13,18 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import com.zaxxer.hikari.HikariDataSource;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import entities.Todolist;
 import utils.DatabaseUtil;
 
+@TestInstance(value = TestInstance.Lifecycle.PER_METHOD)
 public class TodolistRespositoryImplTest {
 
     private HikariDataSource dataSource;
@@ -36,7 +37,7 @@ public class TodolistRespositoryImplTest {
         Todolist todo = new Todolist("RIAN");
         todolistRepository.add(todo);
 
-        String sql = "SELECT id from todolist";
+        String sql = "SELECT id, todo from todolist";
         try (Connection conn = dataSource.getConnection(); 
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         ResultSet result = preparedStatement.executeQuery()){
@@ -50,11 +51,13 @@ public class TodolistRespositoryImplTest {
                 todolist.add(newTodo);
             }
 
+            assertEquals(1, todolist.size());
             todolist.forEach((temp) -> {
                 assertEquals("RIAN", temp.getTodo());
+                assertNotEquals("DAI", temp.getTodo());
             });
         } catch (SQLException e) {
-            //TODO: handle exception
+            throw new RuntimeException(e);
         }
     }
 

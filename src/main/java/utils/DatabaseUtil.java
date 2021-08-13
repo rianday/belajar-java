@@ -6,9 +6,10 @@ import com.zaxxer.hikari.HikariDataSource;
 public class DatabaseUtil {
     
     private static HikariDataSource hikariDataSource;
+    private static HikariConfig configuration;
 
     static {
-        HikariConfig configuration = new HikariConfig();
+        configuration = new HikariConfig();
 
         configuration.setDriverClassName("com.mysql.cj.jdbc.Driver");
         configuration.setUsername("dev");
@@ -25,6 +26,9 @@ public class DatabaseUtil {
     }
 
     public static HikariDataSource getDataSource(){
+        if(hikariDataSource.isClosed()) {
+            hikariDataSource = new HikariDataSource(configuration);
+        }
         return hikariDataSource;
     }
 }
