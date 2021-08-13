@@ -5,14 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
 import entities.Todolist;
 
 public class TodolistRepositoryImpl implements TodolistRepository{
-
-    Todolist[] data = new Todolist[10];
 
     private DataSource dataSource;
 
@@ -25,7 +25,24 @@ public class TodolistRepositoryImpl implements TodolistRepository{
 
     @Override
     public Todolist[] getAll() {
-        return data;
+        String sql = "select * from todolist";
+        List<Todolist> todolist = new ArrayList<>();
+
+        try(Connection conn = dataSource.getConnection();
+        Statement statement = conn.createStatement()) {
+            ResultSet result = statement.executeQuery(sql);
+
+            while(result.next()){
+                Todolist todo = new Todolist();
+                todo.setId(result.getInt("id"));
+                todo.setTodo(result.getString("todo"));
+                todolist.add(todo);
+            }
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+
+        return todolist.toArray(new Todolist[]{});
     }
 
     @Override

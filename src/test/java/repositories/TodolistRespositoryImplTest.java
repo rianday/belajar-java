@@ -12,6 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import com.zaxxer.hikari.HikariDataSource;
@@ -137,6 +139,67 @@ public class TodolistRespositoryImplTest {
         } catch(Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void testGetAllSuccess(){
+
+        // Map<String, String> insertTodo = new HashMap<>();
+        // List<Map<String, String>> insertTodolist = new ArrayList<>();
+
+
+        // insertTodo.put("todo", "ADVANCE IN JAVA AND GOLANG");
+        // insertTodolist.add(insertTodo);
+        // insertTodo.clear();
+
+        // insertTodo.put("todo", "GAJI 20 JUTA UP");
+        // insertTodolist.add(insertTodo);
+        // insertTodo.clear();
+
+        // insertTodo.put("todo", "START TO CREATE ML FOR SUPPORT TRADING USING PRICE ACTION METHOD");
+        // insertTodolist.add(insertTodo);
+        // insertTodo.clear();
+
+        // Iterator insertTodolistIterator = insertTodolist.iterator();
+        // while(insertTodolistIterator.hasNext()) {
+        //     statement.addBatch();
+        //     statement.setString(1, insertTodolistIterator.next().);
+        // }
+
+        List<String> insertTodoList = new ArrayList<>();
+        insertTodoList.addAll(List.of("ADVANCE IN JAVA AND GOLANG", "GAJI 20 JUTA UP", "START TO CREATE ML FOR SUPPORT TRADING USING PRICE ACTION METHOD"));        
+        var insertTodoListIterator = insertTodoList.iterator();
+
+        String insertSql = "insert into todolist(todo) values(?)";
+
+        try(Connection conn = dataSource.getConnection();
+        PreparedStatement statement = conn.prepareStatement(insertSql)
+        ){            
+            while(insertTodoListIterator.hasNext()) {
+                statement.clearParameters();
+                statement.setString(1, insertTodoListIterator.next().toString());
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+
+        } catch(SQLException e){
+            throw new RuntimeException(e);
+        }
+
+
+        Todolist[] todolist = todolistRepository.getAll();
+
+        assertTrue(todolist[0].getTodo().contains("ADVANCE"));
+        assertTrue(todolist[1].getTodo().contains("GAJI"));
+        assertTrue(todolist[2].getTodo().contains("ML FOR"));
+    }
+
+    @Test
+    void testGetAllEmpty() {
+        Todolist[] todolist = todolistRepository.getAll();
+
+        assertEquals(0, todolist.length);
     }
 
     @BeforeEach
