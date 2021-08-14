@@ -1,0 +1,1 @@
+mvn sonar:sonar -Dsonar.login=d1fc956974302f325bb7ec894a44bc3e1142cbc3
